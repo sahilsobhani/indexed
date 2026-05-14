@@ -18,4 +18,4 @@ def chunk_python_file(file_path):
 
             chunks.append(chunk)
 
-        return chunks
+    return chunks

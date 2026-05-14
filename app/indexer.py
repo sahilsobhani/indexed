@@ -21,7 +21,7 @@ def add_chunks(chunks, embeddings):
 
 
 def save_index():
-    Path("storage").mkdir(index, INDEX_PATH)
+    Path("storage").mkdir(parents=True, exist_ok=True)
 
     faiss.write_index(index, INDEX_PATH)
 

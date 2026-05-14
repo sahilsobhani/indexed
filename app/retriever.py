@@ -8,14 +8,14 @@ def search(query, k=5):
 
     query_embedding = get_embedding(query)
 
-    vector = np.array(query_embedding).astype("float32")
+    vector = np.array([query_embedding]).astype("float32")
 
     distance, indices = index.search(vector, k)
 
     results = []
 
     for idx in indices[0]:
-        if idx < len(metadata[idx]):
+        if 0 <= idx < len(metadata):
             results.append(metadata[idx])
 
     return results

@@ -9,11 +9,12 @@ from qa import ask
 def build_index(repo_url):
     repo_path  =  clone_repo(repo_url)
     files = get_code_files(repo_path)
+    python_files = [file for file in files if str(file).endswith(".py")]
 
     all_chunks = []
     all_embeddings = []
 
-    for file in files:
+    for file in python_files:
         try:
             chunks = chunk_python_file(file)
 
@@ -27,6 +28,10 @@ def build_index(repo_url):
 
         except Exception as e:
             print(f"Skipping {file}: {e}")
+
+    if not all_chunks:
+        print("No Python chunks found to index.")
+        return
 
     add_chunks(all_chunks, all_embeddings)
     save_index()
