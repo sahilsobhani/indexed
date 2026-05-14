@@ -1,0 +1,21 @@
+import numpy as np
+
+from embedder  import get_embedding
+from indexer import load_index
+
+def search(query, k=5):
+    index, metadata = load_index()
+
+    query_embedding = get_embedding(query)
+
+    vector = np.array(query_embedding).astype("float32")
+
+    distance, indices = index.search(vector, k)
+
+    results = []
+
+    for idx in indices[0]:
+        if idx < len(metadata[idx]):
+            results.append(metadata[idx])
+
+    return results
