@@ -44,7 +44,7 @@ if __name__ == "__main__":
     build_index(repo_url)
 
     while True:
-        question = input("\nAsk a question: ")
+        question = input("\nAsk a question: ").strip()
 
         if question.lower() == "exit":
             break
