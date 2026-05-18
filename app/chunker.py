@@ -1,4 +1,5 @@
 import ast
+from pathlib import Path
 
 def chunk_python_file(file_path):
     with open(file_path, "r", encoding ="utf-8") as f:
@@ -13,6 +14,8 @@ def chunk_python_file(file_path):
             chunk = {
                 "type":"function",
                 "name": node.name,
+                "file_name": Path(file_path).name,
+                "file_path": str(file_path),
                 "content": ast.get_source_segment(code, node)
             }
 
