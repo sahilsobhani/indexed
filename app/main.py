@@ -21,8 +21,6 @@ def build_index(repo_url):
             for chunk in chunks:
                 embedding = get_embedding(chunk["content"])
 
-                chunk["file"] = str(file)
-
                 all_chunks.append(chunk)
                 all_embeddings.append(embedding)
 
