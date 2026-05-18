@@ -21,19 +21,23 @@ def chunk_python_file(file_path):
     chunks = []
 
     for node in tree.body:
+        # Capture each top-level function as its own chunk.
         if isinstance(node, ast.FunctionDef):
             chunk = build_chunk("function", node.name, file_path, ast.get_source_segment(code, node))
 
             chunks.append(chunk)
 
+        # Capture plain assignments like FOO = 1 or index = faiss.IndexFlatL2(...).
         elif isinstance(node, ast.Assign):
             for target in node.targets:
+                # Only index simple variable names, not attributes or tuple unpacking.
                 if isinstance(target, ast.Name):
                     chunk_type = "constant" if target.id.isupper() else "global"
                     chunk = build_chunk(chunk_type, target.id, file_path, ast.get_source_segment(code, node))
 
                     chunks.append(chunk)
 
+        # Capture annotated assignments like TIMEOUT: int = 30.
         elif isinstance(node, ast.AnnAssign):
             if isinstance(node.target, ast.Name):
                 chunk_type = "constant" if node.target.id.isupper() else "global"
