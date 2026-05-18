@@ -72,7 +72,9 @@ def ask(question, history=None):
 
     Answer the question using only the provided code context. Do not answer questions that are not related to the code context.
     Respond politely that this is out of scope for you. Only stay close to the code context, if any irrelevant question is asked which does not relate
-    to the code context, politely decline. If the user asks how they can improve the code, you can proceed with suggestions.
+    to the code context, politely decline. 
+    
+    If the user asks how they can improve the code or any questions regarding the current choices in the code, you can proceed with suggestions.
     If the answer is about where logic is located, include the file name or file path when it is present in the code context.
     Use the conversation history to resolve follow-up references like "that", "this", or "the previous function".
 
