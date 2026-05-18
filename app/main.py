@@ -3,7 +3,9 @@ from utils import get_code_files
 from chunker import chunk_python_file
 from embedder import get_embedding
 from indexer import add_chunks, save_index
-from qa import ask
+from qa import ask, load_conversation, save_conversation
+
+SEPARATOR = "--" * 60
 
 
 def build_index(repo_url):
@@ -40,6 +42,7 @@ if __name__ == "__main__":
     repo_url = input("GITHUB REPO URL: ")
 
     build_index(repo_url)
+    history = load_conversation()
 
     while True:
         question = input("\nAsk a question: ").strip()
@@ -47,8 +50,15 @@ if __name__ == "__main__":
         if question.lower() == "exit":
             break
 
-        answer = ask(question)
+        if question.lower() == "clear":
+            history = []
+            save_conversation(history)
+            print("\nConversation history cleared.")
+            continue
+
+        answer = ask(question, history)
 
         print("\nANSWER:\n")
         print(answer)
+        print(f"\n{SEPARATOR}")
 
