@@ -1,47 +1,48 @@
 # Indexed
 
-`Indexed` is a small MVP for asking questions about a codebase with retrieval-augmented generation.
+Indexed is a lightweight codebase Q&A tool built with retrieval-augmented generation. It clones a repository, indexes Python code into FAISS, and answers questions using retrieved code context plus conversation history.
 
-It:
+## Features
 
-- clones a GitHub repository locally
-- finds code files
-- chunks Python code with `ast`
-- creates embeddings for those chunks
-- stores them in a FAISS index
-- retrieves relevant chunks for a question
-- asks an OpenAI chat model to answer using that retrieved context
+- Clone and index a GitHub repository locally
+- Parse Python code with `ast`
+- Index top-level functions and module-level assignments
+- Store chunk metadata including symbol name, file name, and file path
+- Retrieve relevant chunks with FAISS
+- Support both `flat` and `hnsw` FAISS index types
+- Persist conversation history for follow-up questions
+- Reset generated state with a simple flush script
 
-Today, that includes a few quality-of-life improvements as well:
+## How It Works
 
-- chunk metadata includes `file_name` and `file_path`
-- chunking covers Python functions plus module-level assignments
-- follow-up questions can use saved conversation history
-- the CLI can build either a flat FAISS index or an HNSW index
-- a small `flush` script clears generated indexes, metadata, conversation history, and cloned repos
+1. The repository is cloned into `repos/`.
+2. Supported code files are collected from the cloned project.
+3. Python files are chunked into retrievable units.
+4. Chunks are embedded with OpenAI embeddings.
+5. Embeddings and metadata are stored in FAISS and JSON files.
+6. User questions retrieve the most relevant chunks.
+7. Retrieved code context and recent conversation history are sent to the chat model for answering.
 
 ## Requirements
 
 - Python 3.10+
 - An OpenAI API key
 
-## Setup
-
-1. Install dependencies:
+## Installation
 
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Create a `.env` file in the project root:
+Create a `.env` file in the project root:
 
 ```env
 OPENAI_API_KEY=your_api_key_here
 ```
 
-## Run
+## Usage
 
-From the project root:
+Run the CLI from the project root:
 
 ```bash
 python app/main.py
@@ -51,26 +52,24 @@ You will be prompted for:
 
 - a GitHub repository URL
 - a FAISS index type: `flat` or `hnsw`
-- follow-up questions about that repo
+- follow-up questions about the indexed repository
 
-Pressing Enter at the index prompt uses the default: `flat`.
+CLI commands:
 
-Inside the Q&A loop:
+- `exit` ends the session
+- `clear` clears saved conversation history
 
-- type `exit` to stop
-- type `clear` to clear saved conversation history
+Pressing Enter at the index selection prompt uses the default index type: `flat`.
 
-The CLI also prints a simple separator between answers to keep the terminal output cleaner.
+## Indexed Data
 
-## What Gets Indexed
-
-For Python files, the chunker currently stores:
+For Python files, Indexed currently stores:
 
 - top-level functions
-- module-level constants such as `MAX_RETRIES = 3`
-- other module-level assignments such as `index = faiss.IndexFlatL2(dimension)`
+- module-level constants
+- other module-level assignments
 
-Each chunk carries metadata including:
+Each chunk includes:
 
 - `type`
 - `name`
@@ -78,9 +77,9 @@ Each chunk carries metadata including:
 - `file_path`
 - `content`
 
-This helps the assistant answer questions like where a function or variable is defined.
+This metadata helps the assistant answer location-based questions such as where a function or variable is defined.
 
-## Conversation Persistence
+## Conversation History
 
 Conversation history is stored in:
 
@@ -88,41 +87,43 @@ Conversation history is stored in:
 storage/conversation.json
 ```
 
-Recent turns are included in retrieval and prompt construction so follow-up questions like "what does that function return?" can use earlier context.
+Recent turns are reused during retrieval and answer generation so follow-up questions can stay grounded in earlier context.
 
-## Current MVP scope
+## Index Types
 
-- indexing currently works on Python files
-- embeddings use `text-embedding-3-small`
-- answers use `gpt-4.1-mini`
+Indexed supports two FAISS backends:
 
-## Index Options
+- `flat` for exact nearest-neighbor search
+- `hnsw` for approximate nearest-neighbor search with better scalability on larger datasets
 
-Indexed supports two FAISS index choices:
+If you switch index types, rebuild the index so `storage/code.index` matches the selected backend.
 
-- `flat`: exact nearest-neighbor search, simpler default
-- `hnsw`: approximate nearest-neighbor search, usually faster on larger datasets
+## Resetting Generated Data
 
-If you switch index types, rebuild the index so `storage/code.index` is recreated with the new FAISS structure.
-
-## Reset Generated Data
-
-To clear generated indexes, metadata, saved conversation history, and cloned repos:
+To remove generated indexes, metadata, conversation history, and cloned repositories:
 
 ```bash
 python scripts/flush.py
 ```
 
-This is useful when you want a clean slate before re-indexing a repository.
+## Project Structure
 
-## Project structure
+- `app/main.py`: CLI entrypoint and indexing flow
+- `app/ingest.py`: repository cloning
+- `app/utils.py`: code file discovery
+- `app/chunker.py`: Python chunk extraction
+- `app/embedder.py`: embedding generation
+- `app/indexer.py`: FAISS index creation, loading, and persistence
+- `app/retriever.py`: similarity search over indexed chunks
+- `app/qa.py`: answer generation with retrieved context and conversation history
+- `scripts/flush.py`: cleanup for generated storage and cloned repos
 
-- `app/main.py`: CLI entrypoint, index selection, and Q&A loop
-- `app/ingest.py`: clone repositories
-- `app/utils.py`: collect code files
-- `app/chunker.py`: extract Python functions and module-level assignment chunks
-- `app/embedder.py`: create embeddings
-- `app/indexer.py`: create, save, and load the FAISS index
-- `app/retriever.py`: retrieve relevant chunks
-- `app/qa.py`: generate answers from retrieved context and conversation history
-- `scripts/flush.py`: clear generated storage and cloned repos
+## Limitations
+
+- Indexing currently focuses on Python chunk extraction
+- Answer quality depends on retrieval quality and available code context
+- Switching index structure requires rebuilding the stored FAISS index
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
