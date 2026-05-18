@@ -5,12 +5,31 @@ from pathlib import Path
 
 INDEX_PATH = "storage/code.index"
 METADATA_PATH = "storage/metadata.json"
+DEFAULT_INDEX_TYPE = "flat"
 
 dimension = 1536
 
-index = faiss.IndexFlatL2(dimension)
+index = None
 
 metadata_store = []
+
+def create_index(index_type=DEFAULT_INDEX_TYPE):
+    """Create a FAISS index for the selected index type."""
+    if index_type == "hnsw":
+        hnsw_index = faiss.IndexHNSWFlat(dimension, 32)
+        hnsw_index.hnsw.efConstruction = 40
+        hnsw_index.hnsw.efSearch = 16
+        return hnsw_index
+
+    return faiss.IndexFlatL2(dimension)
+
+def initialize_index(index_type=DEFAULT_INDEX_TYPE):
+    """Initialize the global FAISS index with the selected type."""
+    global index
+    global metadata_store
+
+    index = create_index(index_type)
+    metadata_store = []
 
 def add_chunks(chunks, embeddings):
     """Add embedded chunks to the in-memory FAISS index and metadata store."""
