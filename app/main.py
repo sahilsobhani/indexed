@@ -15,8 +15,10 @@ def choose_index_type():
     ).strip().lower()
 
     if selection in {"flat", "hnsw"}:
+        print(f"Building {selection.upper()} Index")
         return selection
-
+    
+    print(f"Building FLAT Index")
     return DEFAULT_INDEX_TYPE
 
 def build_index(repo_url, index_type=DEFAULT_INDEX_TYPE):
@@ -48,6 +50,7 @@ def build_index(repo_url, index_type=DEFAULT_INDEX_TYPE):
         return
 
     add_chunks(all_chunks, all_embeddings)
+    
     save_index()
     print("Index Built Succesfully")
 
