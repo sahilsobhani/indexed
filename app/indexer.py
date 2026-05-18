@@ -13,6 +13,7 @@ index = faiss.IndexFlatL2(dimension)
 metadata_store = []
 
 def add_chunks(chunks, embeddings):
+    """Add embedded chunks to the in-memory FAISS index and metadata store."""
     global metadata_store
 
     vectors = np.array(embeddings).astype("float32")
@@ -21,6 +22,7 @@ def add_chunks(chunks, embeddings):
 
 
 def save_index():
+    """Persist the FAISS index and metadata to disk."""
     Path("storage").mkdir(parents=True, exist_ok=True)
 
     faiss.write_index(index, INDEX_PATH)
@@ -30,6 +32,7 @@ def save_index():
 
 
 def load_index():
+    """Load the FAISS index and metadata from disk."""
     global index
     global metadata_store
 

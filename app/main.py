@@ -9,6 +9,7 @@ SEPARATOR = "--" * 60
 
 
 def build_index(repo_url):
+    """Build embeddings and metadata for all supported code files in a repo."""
     repo_path  =  clone_repo(repo_url)
     files = get_code_files(repo_path)
     python_files = [file for file in files if str(file).endswith(".py")]
@@ -61,4 +62,3 @@ if __name__ == "__main__":
         print("\nANSWER:\n")
         print(answer)
         print(f"\n{SEPARATOR}")
-

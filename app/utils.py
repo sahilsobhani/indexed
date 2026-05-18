@@ -17,6 +17,7 @@ IGNORE_DIRS = {
 }
 
 def get_code_files(repo_path):
+    """Collect supported source files while skipping ignored directories."""
 
     files = []
 

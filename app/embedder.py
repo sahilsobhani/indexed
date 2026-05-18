@@ -6,9 +6,10 @@ load_dotenv()
 client = OpenAI()
 
 def get_embedding(text):
-        response = client.embeddings.create(
-                model = "text-embedding-3-small",
-                input = text
-        )
+    """Generate an embedding vector for the given text."""
+    response = client.embeddings.create(
+        model = "text-embedding-3-small",
+        input = text
+    )
 
-        return response.data[0].embedding
+    return response.data[0].embedding

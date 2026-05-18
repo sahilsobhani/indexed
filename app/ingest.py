@@ -2,6 +2,7 @@ from git import Repo
 from pathlib import Path
 
 def clone_repo(repo_url: str):
+    """Clone a repository locally if it is not already present."""
     repo_name = repo_url.split("/")[-1].replace(".git", "")
 
     local_path = Path("repos") / repo_name
