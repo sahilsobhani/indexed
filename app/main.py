@@ -4,6 +4,7 @@ from chunker import chunk_python_file
 from embedder import get_embedding
 from indexer import DEFAULT_INDEX_TYPE, add_chunks, initialize_index, save_index
 from qa import ask, load_conversation, save_conversation
+from banner import print_banner
 
 SEPARATOR = "--" * 60
 
@@ -56,6 +57,7 @@ def build_index(repo_url, index_type=DEFAULT_INDEX_TYPE):
 
 
 if __name__ == "__main__":
+    print_banner()
     repo_url = input("GITHUB REPO URL: ")
     index_type = choose_index_type()
 
