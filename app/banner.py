@@ -6,7 +6,6 @@ from rich.text import Text
 
 console = Console()
 
-
 def print_banner() -> None:
     ascii_art = pyfiglet.figlet_format("INDEXED", font="small").rstrip()
 
