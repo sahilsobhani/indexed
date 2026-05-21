@@ -61,7 +61,7 @@ Indexed is a lightweight codebase Q&A tool built with retrieval-augmented genera
      v          v
 +---------+  +----------------+
 | FAISS   |  | Chroma         |
-|indexer.py| | db.py          |
+|indexer.py| | chroma_db.py   |
 |code.index| | storage/chroma |
 |metadata  | | collection     |
 +----+----+  +--------+-------+
@@ -184,7 +184,7 @@ python scripts/flush.py
 - `app/chunker.py`: Python chunk extraction
 - `app/embedder.py`: embedding generation
 - `app/indexer.py`: FAISS index creation, loading, and persistence
-- `app/db.py`: Chroma client and collection access
+- `app/chroma_db.py`: Chroma client and collection access
 - `app/vector_store.py`: backend selection and shared vector operations
 - `app/retriever.py`: similarity search over indexed chunks
 - `app/qa.py`: answer generation with retrieved context and conversation history

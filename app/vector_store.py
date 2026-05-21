@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from db import get_collection
+from chroma_db import get_collection
 from embedder import get_embedding
 from indexer import (
     DEFAULT_INDEX_TYPE,
