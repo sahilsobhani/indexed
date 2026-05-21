@@ -2,11 +2,28 @@ from ingest import clone_repo
 from utils import get_code_files
 from chunker import chunk_python_file
 from embedder import get_embedding
-from indexer import DEFAULT_INDEX_TYPE, add_chunks, initialize_index, save_index
+from indexer import DEFAULT_INDEX_TYPE
 from qa import ask, load_conversation, save_conversation
 from banner import print_banner
+from vector_store import add_chunks, initialize_store, save_store
 
 SEPARATOR = "--" * 60
+DEFAULT_VECTOR_BACKEND = "faiss"
+SUPPORTED_VECTOR_BACKENDS = {"faiss", "chroma"}
+
+
+def choose_vector_backend():
+    """Prompt the user to choose a vector backend."""
+    selection = input(
+        f"Choose vector backend [faiss/chroma] (default: {DEFAULT_VECTOR_BACKEND}): "
+    ).strip().lower()
+
+    if selection in SUPPORTED_VECTOR_BACKENDS:
+        print(f"Using {selection.upper()} backend")
+        return selection
+
+    print(f"Using {DEFAULT_VECTOR_BACKEND.upper()} backend")
+    return DEFAULT_VECTOR_BACKEND
 
 
 def choose_index_type():
@@ -22,9 +39,13 @@ def choose_index_type():
     print(f"Building FLAT Index")
     return DEFAULT_INDEX_TYPE
 
-def build_index(repo_url, index_type=DEFAULT_INDEX_TYPE):
+def build_index(
+    repo_url,
+    backend=DEFAULT_VECTOR_BACKEND,
+    index_type=DEFAULT_INDEX_TYPE,
+):
     """Build embeddings and metadata for all supported code files in a repo."""
-    initialize_index(index_type)
+    initialize_store(backend, index_type)
 
     repo_path  =  clone_repo(repo_url)
     files = get_code_files(repo_path)
@@ -50,18 +71,19 @@ def build_index(repo_url, index_type=DEFAULT_INDEX_TYPE):
         print("No Python chunks found to index.")
         return
 
-    add_chunks(all_chunks, all_embeddings)
+    add_chunks(all_chunks, all_embeddings, backend)
     
-    save_index()
+    save_store(backend)
     print("Index Built Succesfully")
 
 
 if __name__ == "__main__":
     print_banner()
     repo_url = input("GITHUB REPO URL: ")
-    index_type = choose_index_type()
+    backend = choose_vector_backend()
+    index_type = choose_index_type() if backend == "faiss" else DEFAULT_INDEX_TYPE
 
-    build_index(repo_url, index_type)
+    build_index(repo_url, backend, index_type)
     history = load_conversation()
 
     while True:

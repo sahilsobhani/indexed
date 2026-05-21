@@ -8,7 +8,9 @@ STORAGE_FILES = [
     Path("storage/code.index"),
     Path("storage/metadata.json"),
     Path("storage/conversation.json"),
+    Path("storage/backend.json"),
 ]
+CHROMA_DIR = Path("storage/chroma")
 
 REPOS_DIR = Path("repos")
 
@@ -37,11 +39,19 @@ def handle_remove_readonly(func, path, exc_info):
     func(path)
 
 
+def delete_chroma_directory():
+    """Delete local Chroma data if it exists."""
+    if CHROMA_DIR.exists():
+        shutil.rmtree(CHROMA_DIR, onerror=handle_remove_readonly)
+        print(f"Deleted directory: {CHROMA_DIR}")
+
+
 def flush():
     """Clear generated indexes, metadata, conversation history, and cloned repos."""
     for storage_file in STORAGE_FILES:
         delete_file(storage_file)
 
+    delete_chroma_directory()
     delete_repo_directories()
     print("Flush complete.")
 

@@ -1,6 +1,6 @@
 # Indexed
 
-Indexed is a lightweight codebase Q&A tool built with retrieval-augmented generation. It clones a repository, indexes Python code into FAISS, and answers questions using retrieved code context plus conversation history.
+Indexed is a lightweight codebase Q&A tool built with retrieval-augmented generation. It clones a repository, indexes Python code into FAISS or Chroma, and answers questions using retrieved code context plus conversation history.
 
 ## Features
 
@@ -8,8 +8,9 @@ Indexed is a lightweight codebase Q&A tool built with retrieval-augmented genera
 - Parse Python code with `ast`
 - Index top-level functions and module-level assignments
 - Store chunk metadata including symbol name, file name, and file path
-- Retrieve relevant chunks with FAISS
+- Retrieve relevant chunks with FAISS or Chroma
 - Support both `flat` and `hnsw` FAISS index types
+- Let users choose between a FAISS index and a Chroma collection
 - Persist conversation history for follow-up questions
 - Reset generated state with a simple flush script
 
@@ -19,9 +20,72 @@ Indexed is a lightweight codebase Q&A tool built with retrieval-augmented genera
 2. Supported code files are collected from the cloned project.
 3. Python files are chunked into retrievable units.
 4. Chunks are embedded with OpenAI embeddings.
-5. Embeddings and metadata are stored in FAISS and JSON files.
+5. Embeddings and metadata are stored in the selected vector backend.
 6. User questions retrieve the most relevant chunks.
 7. Retrieved code context and recent conversation history are sent to the chat model for answering.
+
+## Architecture
+
+```text
++--------------------+
+| User / CLI         |
+| app/main.py        |
++---------+----------+
+          |
+          v
++--------------------+
+| Repo ingestion     |
+| ingest.py          |
+| utils.py           |
++---------+----------+
+          |
+          v
++--------------------+
+| Chunk extraction   |
+| chunker.py         |
++---------+----------+
+          |
+          v
++--------------------+
+| Embeddings         |
+| embedder.py        |
+| OpenAI API         |
++---------+----------+
+          |
+          v
++--------------------+
+| Vector store layer |
+| vector_store.py    |
++----+----------+----+
+     |          |
+     v          v
++---------+  +----------------+
+| FAISS   |  | Chroma         |
+|indexer.py| | db.py          |
+|code.index| | storage/chroma |
+|metadata  | | collection     |
++----+----+  +--------+-------+
+     |                |
+     +--------+-------+
+              |
+              v
++--------------------+
+| Retrieval          |
+| retriever.py       |
++---------+----------+
+          |
+          v
++--------------------+
+| QA + history       |
+| qa.py              |
+| conversation.json  |
++---------+----------+
+          |
+          v
++--------------------+
+| Final answer       |
++--------------------+
+```
 
 ## Requirements
 
@@ -51,7 +115,8 @@ python app/main.py
 You will be prompted for:
 
 - a GitHub repository URL
-- a FAISS index type: `flat` or `hnsw`
+- a vector backend: `faiss` or `chroma`
+- a FAISS index type: `flat` or `hnsw` when `faiss` is selected
 - follow-up questions about the indexed repository
 
 CLI commands:
@@ -59,7 +124,7 @@ CLI commands:
 - `exit` ends the session
 - `clear` clears saved conversation history
 
-Pressing Enter at the index selection prompt uses the default index type: `flat`.
+Pressing Enter at the backend prompt uses `faiss`. Pressing Enter at the FAISS index prompt uses the default index type: `flat`.
 
 ## Indexed Data
 
@@ -91,12 +156,17 @@ Recent turns are reused during retrieval and answer generation so follow-up ques
 
 ## Index Types
 
-Indexed supports two FAISS backends:
+Indexed supports two vector backends:
+
+- `faiss` for local vector search with `flat` and `hnsw` index types
+- `chroma` for local persistent vector storage and retrieval
+
+FAISS supports:
 
 - `flat` for exact nearest-neighbor search
 - `hnsw` for approximate nearest-neighbor search with better scalability on larger datasets
 
-If you switch index types, rebuild the index so `storage/code.index` matches the selected backend.
+If you switch vector backends or FAISS index types, rebuild the index so the stored data matches the selected backend.
 
 ## Resetting Generated Data
 
@@ -114,6 +184,8 @@ python scripts/flush.py
 - `app/chunker.py`: Python chunk extraction
 - `app/embedder.py`: embedding generation
 - `app/indexer.py`: FAISS index creation, loading, and persistence
+- `app/db.py`: Chroma client and collection access
+- `app/vector_store.py`: backend selection and shared vector operations
 - `app/retriever.py`: similarity search over indexed chunks
 - `app/qa.py`: answer generation with retrieved context and conversation history
 - `scripts/flush.py`: cleanup for generated storage and cloned repos
@@ -122,7 +194,7 @@ python scripts/flush.py
 
 - Indexing currently focuses on Python chunk extraction
 - Answer quality depends on retrieval quality and available code context
-- Switching index structure requires rebuilding the stored FAISS index
+- Switching vector backend or FAISS index structure requires rebuilding the stored index
 
 ## License
 
